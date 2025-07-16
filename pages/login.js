@@ -13,6 +13,7 @@ export default function LoginPage(){
         setMessage("Loading..");
         if(isLogin){
             const{error}=await supabase.auth.signInWithPassword({email,password});
+            console.log("Auth result (login):",error);
             if(error){
                 setMessage("Login failed: "+error.message);
             
@@ -21,6 +22,7 @@ export default function LoginPage(){
             }
             }else{
                 const{error}=await supabase.auth.signUp({email,password});
+                console.log("Auth result(register):",error);
                 if(error){
                     setMessage("Signup failed: "+ error.message);
                 }else{
