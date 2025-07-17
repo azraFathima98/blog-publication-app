@@ -6,3 +6,4 @@
 - Created README.md , TASKS.md , PROGRESS.md
 -setup supabase and connect app
 - created login /register UI 
+-created sql tables
