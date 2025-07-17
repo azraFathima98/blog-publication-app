@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -17,6 +18,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     if (password !== confirmPassword) {
       setError("Passwords don't match");
@@ -32,18 +34,7 @@ export default function SignupPage() {
 
       if (error) throw error;
 
-      // Create user profile
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        await supabase.from('profiles').upsert({
-          id: user.id,
-          is_premium: false,
-          created_at: new Date().toISOString(),
-        });
-      }
-
-      router.push('/dashboard');
+      setSuccess('Account created! Please check your email to confirm your address.');
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
     } finally {
@@ -53,96 +44,169 @@ export default function SignupPage() {
 
   return (
     <>
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Create a new account</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Or{' '}
-          <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-            sign in to your existing account
-          </Link>
+      <style>{`
+        * {
+          box-sizing: border-box;
+        }
+        body {
+          margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f0f2f5;
+        }
+        .container {
+          max-width: 400px;
+          margin: 60px auto;
+          background: white;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        h2 {
+          text-align: center;
+          margin-bottom: 10px;
+          font-size: 24px;
+          color: #222;
+        }
+        p.center-text {
+          text-align: center;
+          margin-bottom: 20px;
+          font-size: 14px;
+          color: #555;
+        }
+        p.center-text a {
+          color: #0070f3;
+          text-decoration: none;
+        }
+        p.center-text a:hover {
+          text-decoration: underline;
+        }
+        label {
+          display: block;
+          margin-bottom: 6px;
+          font-weight: bold;
+          font-size: 14px;
+          color: #333;
+        }
+        input[type="email"],
+        input[type="password"] {
+          width: 100%;
+          padding: 10px 12px;
+          margin-bottom: 20px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 14px;
+          transition: border-color 0.3s ease;
+        }
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+          border-color: #0070f3;
+          outline: none;
+        }
+        .checkbox-container {
+          display: flex;
+          align-items: center;
+          margin-bottom: 20px;
+          font-size: 14px;
+          color: #333;
+        }
+        .checkbox-container input[type="checkbox"] {
+          margin-right: 8px;
+          width: 16px;
+          height: 16px;
+        }
+        .checkbox-container a {
+          color: #0070f3;
+          text-decoration: none;
+        }
+        .checkbox-container a:hover {
+          text-decoration: underline;
+        }
+        button {
+          width: 100%;
+          padding: 12px 0;
+          font-size: 16px;
+          background-color: #0070f3;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+        button:disabled {
+          background-color: #7aa7f7;
+          cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+          background-color: #005bb5;
+        }
+        .error-msg, .success-msg {
+          margin-bottom: 15px;
+          padding: 12px;
+          border-radius: 4px;
+          font-size: 14px;
+        }
+        .error-msg {
+          background-color: #ffe0e0;
+          color: #d8000c;
+          border: 1px solid #d8000c;
+        }
+        .success-msg {
+          background-color: #d4edda;
+          color: #155724;
+          border: 1px solid #155724;
+        }
+      `}</style>
+
+      <div className="container">
+        <h2>Create a new account</h2>
+        <p className="center-text">
+          Or <Link href="/auth/login">sign in to your existing account</Link>
         </p>
-      </div>
 
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+        {error && <div className="error-msg">{error}</div>}
+        {success && <div className="success-msg">{success}</div>}
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        <div className="rounded-md shadow-sm space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-              Confirm Password
-            </label>
-            <input
-              id="confirm-password"
-              name="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center">
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="email">Email address</label>
           <input
-            id="terms"
-            name="terms"
-            type="checkbox"
+            type="email"
+            id="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             required
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            autoComplete="email"
           />
-          <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-            I agree to the <a href="#" className="text-blue-600 hover:text-blue-500">Terms of Service</a> and <a href="#" className="text-blue-600 hover:text-blue-500">Privacy Policy</a>
-          </label>
-        </div>
 
-        <div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+          />
+
+          <label htmlFor="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+          />
+
+          <div className="checkbox-container">
+            <input type="checkbox" id="terms" required />
+            <label htmlFor="terms">
+              I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+            </label>
+          </div>
+
+          <button type="submit" disabled={loading}>
             {loading ? 'Creating account...' : 'Create account'}
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </>
   );
 }
