@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import PostCard from './components/PostCard';
 import { supabase } from '../app/lib/supabaseClient';
 
@@ -9,37 +10,83 @@ interface Post {
   description: string;
   image_url: string;
   user_id: string;
+  is_premium: boolean;
 }
 
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
-    fetchPosts();
+    getUserAndPosts();
   }, []);
 
-  const fetchPosts = async (search = '') => {
+  const getUserAndPosts = async () => {
     setLoading(true);
-    let query = supabase.from('posts').select('*').order('id', { ascending: false });
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const user = session?.user;
+    if (user) {
+      setUserId(user.id);
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('is_premium')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+      } else {
+        setIsPremiumUser(userData?.is_premium || false);
+      }
+    }
+
+    fetchPosts(searchTerm, user?.id, isPremiumUser);
+  };
+
+  const fetchPosts = async (search = '', uid?: string, isPremium = false) => {
+    let query = supabase
+      .from('posts')
+      .select('*')
+      .order('id', { ascending: false });
 
     if (search.trim() !== '') {
       query = query.ilike('description', `%${search}%`);
     }
 
+    if (!isPremium) {
+      query = query.eq('is_premium', false);
+    }
+
     const { data, error } = await query;
+
     if (error) {
       console.error('Error fetching posts:', error);
     } else {
       setPosts(data || []);
     }
+
     setLoading(false);
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    fetchPosts(searchTerm);
+    fetchPosts(searchTerm, userId, isPremiumUser);
+  };
+
+  const handleSubscribe = async () => {
+    const res = await fetch('/api/checkout', { method: 'POST' });
+    const { url } = await res.json();
+    window.location.href = url;
   };
 
   return (
@@ -54,6 +101,19 @@ export default function HomePage() {
             Discover amazing content from talented writers. Join our community of readers and creators.
           </p>
         </header>
+
+        {/* Subscribe Button (only if not premium) */}
+        {!isPremiumUser && (
+          <div className="text-center mb-6">
+            <p className="text-md text-gray-700 mb-2">Want to read premium content?</p>
+            <button
+              onClick={handleSubscribe}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-semibold shadow transition"
+            >
+              Subscribe to Premium
+            </button>
+          </div>
+        )}
 
         {/* Search box */}
         <form
