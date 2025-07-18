@@ -27,31 +27,32 @@ export default function HomePage() {
   }, []);
 
   const getUserAndPosts = async () => {
-    setLoading(true);
+  setLoading(true);
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    const user = session?.user;
-    if (user) {
-      setUserId(user.id);
+  const user = session?.user;
+  if (user) {
+    setUserId(user.id);
 
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('is_premium')
-        .eq('id', user.id)
-        .single();
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('is_premium')
+      .eq('id', user.id)
+      .single();
 
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-      } else {
-        setIsPremiumUser(userData?.is_premium || false);
-      }
+    if (userError) {
+      console.error('Error fetching user data:', userError);
+    } else {
+      setIsPremiumUser(userData?.is_premium || false);
     }
+  }
 
-    fetchPosts(searchTerm, user?.id, isPremiumUser);
-  };
+  fetchPosts(searchTerm, user?.id ?? undefined, isPremiumUser);
+};
+
 
   const fetchPosts = async (search = '', uid?: string, isPremium = false) => {
     let query = supabase
@@ -80,7 +81,7 @@ export default function HomePage() {
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    fetchPosts(searchTerm, userId, isPremiumUser);
+fetchPosts(searchTerm, user?.id === null ? undefined : user?.id, isPremiumUser);
   };
 
   const handleSubscribe = async () => {
@@ -92,7 +93,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-6">
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-3xl p-10 border border-gray-200">
-        {/* Hero Section */}
+        {}
         <header className="mb-10 text-center">
           <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800 leading-tight tracking-tight">
             Welcome to <span className="text-blue-600">BlogApp</span>
@@ -102,7 +103,7 @@ export default function HomePage() {
           </p>
         </header>
 
-        {/* Subscribe Button (only if not premium) */}
+        {}
         {!isPremiumUser && (
           <div className="text-center mb-6">
             <p className="text-md text-gray-700 mb-2">Want to read premium content?</p>
@@ -115,7 +116,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Search box */}
+        {}
         <form
           onSubmit={handleSearch}
           className="mb-10 flex flex-col sm:flex-row justify-center items-center max-w-xl mx-auto gap-3"
@@ -135,7 +136,7 @@ export default function HomePage() {
           </button>
         </form>
 
-        {/* Post Cards */}
+        {}
         {loading ? (
           <p className="text-center text-gray-500 text-lg">Loading posts...</p>
         ) : (
