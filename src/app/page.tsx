@@ -80,9 +80,10 @@ export default function HomePage() {
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-fetchPosts(searchTerm, user?.id === null ? undefined : user?.id, isPremiumUser);
-  };
+  e.preventDefault();
+  fetchPosts(searchTerm, userId ?? undefined, isPremiumUser);
+};
+
 
   const handleSubscribe = async () => {
     const res = await fetch('/api/checkout', { method: 'POST' });
