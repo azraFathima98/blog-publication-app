@@ -6,3 +6,5 @@
 -  Integrate Supabase authentication
 -  create sql tables
 -  create dashboard 
+- create post adding,updating,deleting
+-create payment

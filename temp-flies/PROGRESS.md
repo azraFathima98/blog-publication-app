@@ -7,3 +7,5 @@
 -setup supabase and connect app
 - created login /register UI 
 -created sql tables
+-created dashboard
+- created post adding,updating,deleting
