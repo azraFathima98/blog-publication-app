@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import PostCard from './components/PostCard';
 import { supabase } from '../app/lib/supabaseClient';
 
@@ -18,54 +17,18 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isPremiumUser, setIsPremiumUser] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
-  const router = useRouter();
 
   useEffect(() => {
-    getUserAndPosts();
+    fetchPosts();
   }, []);
 
-  const getUserAndPosts = async () => {
-  setLoading(true);
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const user = session?.user;
-  if (user) {
-    setUserId(user.id);
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('is_premium')
-      .eq('id', user.id)
-      .single();
-
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-    } else {
-      setIsPremiumUser(userData?.is_premium || false);
-    }
-  }
-
-  fetchPosts(searchTerm, user?.id ?? undefined, isPremiumUser);
-};
-
-
-  const fetchPosts = async (search = '', uid?: string, isPremium = false) => {
-    let query = supabase
-      .from('posts')
-      .select('*')
-      .order('id', { ascending: false });
+  const fetchPosts = async (search = '') => {
+    setLoading(true);
+    let query = supabase.from('posts').select('*').order('id', { ascending: false });
 
     if (search.trim() !== '') {
       query = query.ilike('description', `%${search}%`);
-    }
-
-    if (!isPremium) {
-      query = query.eq('is_premium', false);
     }
 
     const { data, error } = await query;
@@ -75,16 +38,13 @@ export default function HomePage() {
     } else {
       setPosts(data || []);
     }
-
     setLoading(false);
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  fetchPosts(searchTerm, userId ?? undefined, isPremiumUser);
-};
-
-
+    e.preventDefault();
+    fetchPosts(searchTerm);
+  };
   const handleSubscribe = async () => {
     const res = await fetch('/api/checkout', { method: 'POST' });
     const { url } = await res.json();
@@ -92,20 +52,15 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-6">
-      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-3xl p-10 border border-gray-200">
-        {}
+    <main className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-10">
         <header className="mb-10 text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800 leading-tight tracking-tight">
-            Welcome to <span className="text-blue-600">BlogApp</span>
-          </h1>
-          <p className="mt-4 text-gray-600 text-lg md:text-xl max-w-2xl mx-auto">
+          <h1 className="text-5xl font-extrabold text-gray-800">Welcome to BlogApp</h1>
+          <p className="mt-4 text-gray-600 text-lg">
             Discover amazing content from talented writers. Join our community of readers and creators.
           </p>
         </header>
-
-        {}
-        {!isPremiumUser && (
+         {!isPremiumUser && (
           <div className="text-center mb-6">
             <p className="text-md text-gray-700 mb-2">Want to read premium content?</p>
             <button
@@ -117,39 +72,33 @@ export default function HomePage() {
           </div>
         )}
 
-        {}
-        <form
-          onSubmit={handleSearch}
-          className="mb-10 flex flex-col sm:flex-row justify-center items-center max-w-xl mx-auto gap-3"
-        >
+        
+        <form onSubmit={handleSearch} className="mb-8 flex justify-center max-w-md mx-auto">
           <input
             type="text"
             placeholder="Search posts by description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full sm:flex-1 border border-gray-300 rounded-xl px-5 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            className="flex-grow border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow"
+            className="bg-blue-600 text-white px-6 py-2 rounded-r-md hover:bg-blue-700 transition"
           >
             Search
           </button>
         </form>
 
-        {}
         {loading ? (
-          <p className="text-center text-gray-500 text-lg">Loading posts...</p>
+          <p className="text-center text-gray-500">Loading posts...</p>
         ) : (
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {posts.length > 0 ? (
               posts.map((post) => (
-                <div key={post.id} className="hover:scale-[1.02] transition-transform duration-200 ease-in-out">
-                  <PostCard post={post} />
-                </div>
+                <PostCard key={post.id} post={post} />
               ))
             ) : (
-              <p className="text-center text-gray-500 col-span-full text-lg">No posts found.</p>
+              <p className="text-center text-gray-500 col-span-full">No posts found.</p>
             )}
           </section>
         )}
