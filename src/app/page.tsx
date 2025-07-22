@@ -16,7 +16,8 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [isPremiumUser] = useState(false);
+
 
 
   useEffect(() => {
