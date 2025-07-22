@@ -8,10 +8,10 @@ export default function SuccessPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/'); // Redirect to home
-    }, 3000); // Wait 3 seconds
+      router.push('/'); 
+    }, 3000); 
 
-    return () => clearTimeout(timer); // Clean up on unmount
+    return () => clearTimeout(timer); 
   }, [router]);
 
   return (
