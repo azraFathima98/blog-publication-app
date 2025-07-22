@@ -10,10 +10,11 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends([
+  ...compat.extends(
+    // ✅ pass individual strings directly (not inside another array)
     "next/core-web-vitals",
     "next/typescript"
-  ]),
+  ),
 ];
 
 export default eslintConfig;
